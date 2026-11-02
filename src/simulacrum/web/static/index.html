@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Simulacrum</title>
+<link rel="icon" href="data:,">
+<link rel="stylesheet" href="/static/app.css">
+</head>
+<body>
+<header class="bar">
+  <div class="title">
+    <h1 id="world-title">Simulacrum</h1>
+    <p id="world-desc">Generate a world, press Play, and change the weather or the land while it runs.</p>
+  </div>
+  <form id="new-world" class="newworld">
+    <label>World <select id="eco"></select></label>
+    <label>Seed <input id="seed" type="number" min="0" step="1" inputmode="numeric"></label>
+    <button type="button" id="reseed">Random seed</button>
+    <label>Group decisions
+      <select id="llm"><option value="stub">Offline rules</option><option value="anthropic">Claude</option><option value="gemini">Gemini</option></select>
+    </label>
+    <button class="primary" id="generate">Generate world</button>
+    <button type="button" id="custom">Write your own spec</button>
+  </form>
+  <div id="status" role="status" aria-live="polite"></div>
+</header>
+
+<main>
+  <section class="stage" aria-label="World">
+    <div class="transport">
+      <button id="play" class="primary" disabled>Play</button>
+      <button id="step1" disabled>Step</button>
+      <button id="step10" disabled>Step 10</button>
+      <label class="sr" for="speed">Speed</label>
+      <select id="speed" title="Speed">
+        <option value="2">2 ticks per second</option>
+        <option value="5" selected>5 ticks per second</option>
+        <option value="10">10 ticks per second</option>
+        <option value="30">As fast as possible</option>
+      </select>
+      <div class="seg" id="layers" role="group" aria-label="Map layer"></div>
+      <div class="readout" id="readout"></div>
+    </div>
+    <div id="mapwrap">
+      <canvas id="map" aria-label="World map. Click a cell to choose where to intervene."></canvas>
+      <pre id="ascii" hidden></pre>
+      <div class="tip" id="maptip" hidden></div>
+    </div>
+
+    <div class="plate">
+      <header>
+        <h2>Over time</h2>
+        <div class="tabs" id="tabs" role="group" aria-label="Chart data"></div>
+        <button class="tools" id="tableToggle" aria-pressed="false">View as table</button>
+      </header>
+      <div class="legend" id="legend"></div>
+      <div id="chart"></div>
+    </div>
+  </section>
+
+  <aside>
+    <section>
+      <h2>Chronicle</h2>
+      <ol id="feed" aria-live="off"></ol>
+    </section>
+
+    <section id="intervene">
+      <h2>Change the world</h2>
+      <p class="hint" id="p-desc">Pick an input, click the map to choose where, then apply it.</p>
+      <form id="pform">
+        <label class="field">Input <select id="p-name"></select></label>
+        <div id="p-params"></div>
+        <button class="flag" id="p-apply" disabled>Apply on next tick</button>
+      </form>
+      <p id="pending"></p>
+    </section>
+
+    <section id="relsec" hidden>
+      <h2>How groups feel about each other</h2>
+      <div id="rels"></div>
+    </section>
+
+    <section>
+      <h2>Tallies</h2>
+      <div class="tally" id="tally"></div>
+      <div class="row-actions">
+        <button id="verify" disabled>Verify replay</button>
+        <button id="download" disabled>Download run log</button>
+      </div>
+      <p class="hint" id="verify-out" role="status"></p>
+    </section>
+  </aside>
+</main>
+
+<dialog id="spec-dialog">
+  <h2>Write your own spec</h2>
+  <p class="hint">An ecosystem is JSON: environment, agent types, relationships, systems. It can use any registered component; plugins that add Python code live in the server's ecosystems folder.</p>
+  <textarea id="spec-text" spellcheck="false" aria-label="Ecosystem spec JSON"></textarea>
+  <div class="err" id="spec-err" role="alert"></div>
+  <div class="row-actions">
+    <button id="spec-load" type="button">Copy current world into editor</button>
+    <button id="spec-run" type="button" class="primary">Generate from this spec</button>
+    <button id="spec-close" type="button">Close</button>
+  </div>
+</dialog>
+
+<script src="/static/app.js" defer></script>
+</body>
+</html>

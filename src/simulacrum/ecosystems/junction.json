@@ -1,0 +1,32 @@
+{
+  "name": "Four-Way Junction",
+  "description": "A signalised crossroads. Cars spawn at the four edges and drive straight through; a plugin supplies the road generator, signal controller, car brain, spawner and the perturbations (accident, signal fault, rush-hour surge, rain). Watch queues form, clear, or lock up.",
+  "seed": 3,
+  "plugins": ["junction_plugin.py"],
+  "environment": {
+    "width": 33,
+    "height": 25,
+    "terrains": {
+      "grass":    {"glyph": ".", "color": "#27332b", "passable": true},
+      "road":     {"glyph": "=", "color": "#3a3d45", "passable": true},
+      "junction": {"glyph": "+", "color": "#4d515c", "passable": true}
+    },
+    "generator": {"kind": "crossroads", "params": {}},
+    "agents": [
+      {"kind": "signal", "params": {"green": 14, "clearance": 2}}
+    ]
+  },
+  "agent_types": [
+    {
+      "name": "car", "glyph": "c", "color": "#f2c14e",
+      "brain": "drive", "exclusive": true, "max_population": 200,
+      "habitat": ["road", "junction"],
+      "attrs": {"dir": "E", "wait": 0}
+    }
+  ],
+  "systems": [
+    {"kind": "traffic_spawner", "phase": "pre", "params": {"rate": 0.16}},
+    {"kind": "traffic_stats"}
+  ],
+  "perturbations": ["accident", "signal_fault", "surge", "rain"]
+}

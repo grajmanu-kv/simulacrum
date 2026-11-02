@@ -1,0 +1,72 @@
+{
+  "name": "Island Forest",
+  "description": "A generated island: plants regrow with the seasons, grazers eat them, hunters eat grazers, and a few LLM-driven tribes forage, hunt, trade and raid. Inject droughts, floods and roads and watch the food web react.",
+  "seed": 7,
+  "narrate_every": 25,
+  "environment": {
+    "width": 56,
+    "height": 36,
+    "terrains": {
+      "water":  {"glyph": "~", "color": "#2a5d8f", "passable": false, "move_cost": 1.0, "capacity": 0.0},
+      "sand":   {"glyph": ",", "color": "#c9b87a", "passable": true,  "move_cost": 1.0, "capacity": 0.15},
+      "grass":  {"glyph": ".", "color": "#5f9e4f", "passable": true,  "move_cost": 1.0, "capacity": 1.0},
+      "forest": {"glyph": "^", "color": "#2f6b3a", "passable": true,  "move_cost": 1.4, "capacity": 0.7},
+      "rock":   {"glyph": "A", "color": "#8a8a8a", "passable": true,  "move_cost": 2.0, "capacity": 0.05},
+      "road":   {"glyph": "=", "color": "#b08968", "passable": true,  "move_cost": 1.0, "capacity": 0.0}
+    },
+    "fields": [
+      {"name": "plants", "max": 1.0, "init_fraction_of_capacity": 0.7, "color": "#3fa34d"}
+    ],
+    "generator": {
+      "kind": "noise_terrain",
+      "params": {
+        "scale": 11, "octaves": 3, "island": 0.35,
+        "bands": [[0.30, "water"], [0.35, "sand"], [0.90, "grass"], [1.01, "rock"]],
+        "patches": [{"on": "grass", "to": "forest", "scale": 6, "threshold": 0.55}]
+      }
+    },
+    "agents": [
+      {"kind": "season", "params": {"period": 160}},
+      {"kind": "weather", "params": {"storm_chance": 0.008}}
+    ]
+  },
+  "agent_types": [
+    {
+      "name": "grazer", "glyph": "g", "color": "#e8d36a",
+      "brain": "grazer", "brain_params": {"vision": 3, "bite": 0.5},
+      "max_energy": 20, "metabolism": 0.25, "lifespan": 400, "max_population": 300,
+      "initial": {"count": 90, "terrains": ["grass", "forest"], "energy": 12},
+      "reproduce": {"threshold": 14, "cost": 6, "offspring_energy": 7, "chance": 0.07, "min_age": 12, "max_local": 7, "radius": 3}
+    },
+    {
+      "name": "hunter", "glyph": "h", "color": "#d9534f",
+      "brain": "hunter", "brain_params": {"vision": 6, "rest_above": 0.65},
+      "max_energy": 30, "metabolism": 0.4, "lifespan": 500, "max_population": 40,
+      "initial": {"count": 8, "terrains": ["grass", "forest"], "energy": 20},
+      "reproduce": {"threshold": 26, "cost": 12, "offspring_energy": 12, "chance": 0.04, "min_age": 30, "max_local": 3, "radius": 6}
+    },
+    {
+      "name": "tribe", "glyph": "T", "color": "#7aa2f7", "tier": "llm",
+      "brain": "faction", "brain_params": {"think_every": 6, "radius": 10},
+      "max_energy": 100, "metabolism": 0, "max_population": 14,
+      "habitat": ["sand", "grass", "forest", "road"],
+      "initial": {"count": 4, "terrains": ["grass"]},
+      "attrs": {"pop": 10, "food": 15.0},
+      "attr_choices": {"trait": ["peaceful", "aggressive", "cunning"]}
+    }
+  ],
+  "relationships": [
+    {"source": "grazer", "kind": "eats", "target": "field:plants", "params": {"gain": 2.6}},
+    {"source": "hunter", "kind": "eats", "target": "grazer", "params": {"gain": 0.8, "success": 0.5, "refuge": {"forest": 0.5}}},
+    {"source": "tribe",  "kind": "eats", "target": "grazer", "params": {"gain": 0.6}},
+    {"source": "tribe",  "kind": "affinity", "target": "tribe", "params": {"initial": 0.0}}
+  ],
+  "systems": [
+    {"kind": "plant_growth", "phase": "pre", "params": {"field": "plants", "rate": 0.12}},
+    {"kind": "metabolism"},
+    {"kind": "reproduction"},
+    {"kind": "faction_economy", "params": {"types": ["tribe"]}},
+    {"kind": "affinity_decay", "params": {"rate": 0.02}}
+  ],
+  "perturbations": ["drought", "heavy_rain", "storm", "flood", "terraform", "introduce", "plague"]
+}
